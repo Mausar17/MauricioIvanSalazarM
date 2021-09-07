@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace FormatoDeCorte
 {
@@ -11,27 +12,45 @@ namespace FormatoDeCorte
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            var file = new FileInfo(@"C:\Users\MauricioIvanSalazarM\Downloads\CORTES.xlsx");
+            Console.WriteLine("Antes de ejecutar, asegurate de tener 'CORTES.xlsx' en el archivo de 'Downloads' y 'Tickets de Cortes.txt' en 'Documents'...");
+            Thread.Sleep(3000);
+
+            string pathExcel = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Downloads\CORTES.xlsx";
+            var file = new FileInfo(pathExcel);
             if (!file.Exists)
             {
-                Console.WriteLine("Error, no se ha descargado el corte, intentar de nuevo despues de descargar...");
+                Console.WriteLine("Error, no se ha descargado el corte, asegurate de haber descargado el documento e intenta de nuevo...");
+                Thread.Sleep(5000);
+                return;
+            }
+            
+            var pathTxt = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Documents\Tickets de Cortes.txt";
+            var fileTxt = new FileInfo(pathTxt);
+            if (!fileTxt.Exists)
+            {
+                Console.WriteLine("Error, no existe 'Tickets de Cortes.txt' en el archivo de 'Documents', asegurate de guardarlo o crearlo ahi e intenta de nuevo...");
+                Thread.Sleep(5000);
                 return;
             }
 
             var listaDeIncidencias = GetIncidenciasList(file);
 
-            AddToTxt(listaDeIncidencias);
+            AddToTxt(listaDeIncidencias, pathTxt);
 
             DeleteIfExists(file);
+
+            Console.WriteLine("Exito!");
+            Thread.Sleep(3000);
         }
 
         /// <summary>
         /// Adds lista de incidencias to TXT file with formatting, including date
         /// </summary>
-        /// <param name="incidenciasLista"> Lista de objetos incidencia con propiedades de Folio y ComentarioEjecutivo</param>
-        private static void AddToTxt(List<Incidencias> incidenciasLista)
+        /// <param name="incidenciasLista"> Incidencias Type, lista de incidencias</param>
+        /// <param name="pathTxt">string containing path to txt file</param>
+        private static void AddToTxt(List<Incidencias> incidenciasLista, string pathTxt)
         {
-            using (StreamWriter sw = File.AppendText(@"C:\Users\MauricioIvanSalazarM\Documents\Tickets de Cortes.txt"))
+            using (StreamWriter sw = File.AppendText(pathTxt))
             {
                 sw.WriteLine("\n------------------------------------ " + DateTime.Today.ToString("dddd, dd MMM y"));
                 foreach (var incidencia in incidenciasLista)
